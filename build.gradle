@@ -19,9 +19,13 @@ repositories {
 }
 
 dependencies {
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0")
+
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.11'
 
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
 
@@ -44,21 +48,19 @@ dependencies {
 openApiGenerate {
     generatorName = 'spring'
 
-    inputSpec = "$projectDir/src/main/resources/openapi.yml"
+    inputSpec = "${projectDir}/src/main/resources/openapi.yml"
 
-    outputDir = "$buildDir/generated"
+    outputDir = "${buildDir}/generated"
 
     apiPackage = 'com.marketofferhub.api'
     modelPackage = 'com.marketofferhub.api.dto'
 
     configOptions = [
-            useSpringBoot3        : 'true',
-            interfaceOnly         : 'true',
-            skipDefaultInterface  : 'true',
-            useTags               : 'true',
-            dateLibrary           : 'java8',
-            serializationLibrary  : 'jackson',
-            useBeanValidation     : 'true',
+            interfaceOnly: 'true',
+            useTags: 'true',
+            dateLibrary: 'java8',
+            serializationLibrary: 'jackson',
+            useBeanValidation: 'true',
             hideGenerationTimestamp: 'true'
     ]
 
@@ -68,7 +70,6 @@ openApiGenerate {
             apiDocs: 'false',
             apiTests: 'false'
     ]
-
 }
 
 sourceSets {

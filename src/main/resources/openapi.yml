@@ -1,170 +1,161 @@
 openapi: 3.0.3
 
 info:
-title: MarketOfferHub API
-description: |
-  API do MarketOfferHub, agregador de ofertas de supermercados.
-  
-  ```
-  O MVP disponibiliza as ofertas do dia dos supermercados configurados.
-  ```
+  title: MarketOfferHub API
+  description: |
+    API do MarketOfferHub, agregador de ofertas de supermercados.
 
-version: 1.0.0
+    O MVP disponibiliza as ofertas do dia dos supermercados configurados.
+  version: 1.0.0
 
 servers:
-
-  * url: http://localhost:8080
-      description: Ambiente local
+  - url: http://localhost:8080
+    description: Ambiente local
 
 tags:
-
-  * name: Ofertas
-      description: Operações relacionadas às ofertas dos supermercados
+  - name: Ofertas
+    description: Operações relacionadas às ofertas dos supermercados
 
 paths:
-/ofertas:
-get:
-tags:
-  - Ofertas
-summary: Consulta as ofertas do dia
-description: |
-  Retorna as ofertas coletadas dos supermercados configurados.
-  
-  ```
-  Caso as ofertas de um mercado ainda não tenham sido coletadas no
-  dia atual, o sistema executará a coleta configurada para aquele mercado.
-  
-  Uma falha na coleta de um mercado não impede o processamento dos demais.
-operationId: buscarOfertasDoDia
-responses:
-  '200':
-    description: Ofertas do dia retornadas com sucesso
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/OfertasResponse'
+  /ofertas:
+    get:
+      tags:
+        - Ofertas
+      summary: Consulta as ofertas do dia
+      description: |
+        Retorna as ofertas coletadas dos supermercados configurados.
 
-  '500':
-    description: Erro interno inesperado
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/ErroResponse'
-  ```
+        Caso as ofertas de um mercado ainda não tenham sido coletadas no
+        dia atual, o sistema executará a coleta configurada para aquele mercado.
+
+        Uma falha na coleta de um mercado não impede o processamento dos demais.
+      operationId: findDayOffers
+      responses:
+        '200':
+          description: Ofertas do dia retornadas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfertasResponse'
+
+        '500':
+          description: Erro interno inesperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
 
 components:
+  schemas:
 
-schemas:
+    OfertasResponse:
+      type: object
+      required:
+        - ofertas
+        - erros
+      properties:
+        ofertas:
+          type: array
+          description: Ofertas encontradas nos supermercados.
+          items:
+            $ref: '#/components/schemas/OfertaResponse'
 
-  ```
-OfertasResponse:
-  type: object
-  required:
-    - ofertas
-    - erros
-  properties:
-    ofertas:
-      type: array
-      description: Ofertas encontradas nos supermercados.
-      items:
-        $ref: '#/components/schemas/OfertaResponse'
+        erros:
+          type: array
+          description: Mercados que apresentaram erro durante a coleta.
+          items:
+            $ref: '#/components/schemas/ErroColetaResponse'
 
-    erros:
-      type: array
-      description: Mercados que apresentaram erro durante a coleta.
-      items:
-        $ref: '#/components/schemas/ErroColetaResponse'
+    OfertaResponse:
+      type: object
+      required:
+        - produto
+        - mercado
+        - preco
+        - dataColeta
+        - confianca
+      properties:
+        produto:
+          $ref: '#/components/schemas/ProdutoResponse'
 
-OfertaResponse:
-  type: object
-  required:
-    - produto
-    - mercado
-    - preco
-    - dataColeta
-    - confianca
-  properties:
-    produto:
-      $ref: '#/components/schemas/ProdutoResponse'
+        mercado:
+          type: string
+          description: Nome do supermercado.
+          example: Rissul
 
-    mercado:
-      type: string
-      description: Nome do supermercado.
-      example: Rissul
+        preco:
+          type: number
+          format: double
+          minimum: 0
+          description: Preço atual da oferta.
+          example: 19.90
 
-    preco:
-      type: number
-      format: double
-      minimum: 0
-      description: Preço atual da oferta.
-      example: 19.90
+        precoOriginal:
+          type: number
+          format: double
+          minimum: 0
+          nullable: true
+          description: Preço original do produto antes da oferta.
+          example: 24.90
 
-    precoOriginal:
-      type: number
-      format: double
-      minimum: 0
-      nullable: true
-      description: Preço original do produto antes da oferta.
-      example: 24.90
+        dataColeta:
+          type: string
+          format: date-time
+          description: Data e hora em que a oferta foi coletada.
+          example: "2026-09-27T10:30:00"
 
-    dataColeta:
-      type: string
-      format: date-time
-      description: Data e hora em que a oferta foi coletada.
-      example: "2026-09-27T10:30:00"
+        confianca:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          description: |
+            Grau de confiança da informação coletada.
 
-    confianca:
-      type: number
-      format: double
-      minimum: 0
-      maximum: 1
-      description: |
-        Grau de confiança da informação coletada.
+            Para dados obtidos diretamente por API, o valor será 1.0.
+            Para dados obtidos através de encarte/OCR/IA, o valor será
+            determinado pelo processamento.
+          example: 1.0
 
-        Para dados obtidos diretamente por API, o valor será 1.0.
-        Para dados obtidos através de encarte/OCR/IA, o valor será
-        determinado pelo processamento.
-      example: 1.0
+    ProdutoResponse:
+      type: object
+      required:
+        - id
+        - nome
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identificador único do produto.
+          example: 1
 
-ProdutoResponse:
-  type: object
-  required:
-    - id
-    - nome
-  properties:
-    id:
-      type: integer
-      format: int64
-      description: Identificador único do produto.
-      example: 1
+        nome:
+          type: string
+          description: Nome normalizado do produto.
+          example: Arroz Tio Joao 5kg
 
-    nome:
-      type: string
-      description: Nome normalizado do produto.
-      example: Arroz Tio Joao 5kg
+    ErroColetaResponse:
+      type: object
+      required:
+        - mercado
+        - mensagem
+      properties:
+        mercado:
+          type: string
+          description: Nome do supermercado que apresentou erro.
+          example: Mercado Exemplo
 
-ErroColetaResponse:
-  type: object
-  required:
-    - mercado
-    - mensagem
-  properties:
-    mercado:
-      type: string
-      description: Nome do supermercado que apresentou erro.
-      example: Mercado Exemplo
+        mensagem:
+          type: string
+          description: Descrição do erro ocorrido durante a coleta.
+          example: Não foi possível acessar a fonte de ofertas.
 
-    mensagem:
-      type: string
-      description: Descrição do erro ocorrido durante a coleta.
-      example: Não foi possível acessar a fonte de ofertas.
-
-ErroResponse:
-  type: object
-  required:
-    - mensagem
-  properties:
-    mensagem:
-      type: string
-      description: Descrição do erro.
-      example: Erro interno inesperado.
+    ErroResponse:
+      type: object
+      required:
+        - mensagem
+      properties:
+        mensagem:
+          type: string
+          description: Descrição do erro.
+          example: Erro interno inesperado.
